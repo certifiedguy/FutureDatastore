@@ -1,0 +1,197 @@
+--	Service
+
+local Service__ReplicatedStorage	=	game:GetService("ReplicatedStorage")
+local Service__DataStoreService		=	game:GetService("DataStoreService")
+local Service__Players				=	game:GetService("Players")
+
+
+--	Derived
+
+local Datastore						=	Service__DataStoreService:GetDataStore("1")
+
+
+--	return
+
+local table__Return					=	{}
+
+
+return {
+
+	--	[Format - customize here]
+
+	Format	=	{
+
+		["Folder with one value"]	=	true,
+
+		["Folder with multiple values"]	=	{
+
+			["You can use space in keys!"]	=	"Yes!",
+
+			["Test"]	=	123,
+
+			["You can even create more levels"]	=	{true, "false", "wait, since when could i save arrays?"},
+
+		}
+
+	},
+
+	--	[Settings - optional]
+
+	["If the data-key (in the table) no longer exists (in the format), remove it."]		=	true,	--	Allows you to have more storage per Key.
+
+	["If there is new data (that is not in the table), add that in."]					=	true,	--	Helps prevent errors for scripts that rely on a certain value not there yet.
+	
+	["Method WaitForChild TimeOut in seconds."]											=	10,
+	
+	
+	--	[Internal - for smart people]
+	
+	load__Data	=	function(self, Key)
+		
+		return Datastore:GetAsync(Key) or self.Format
+
+	end,
+
+
+	validate__Data	=	function(self, table__Data)
+
+		if self["If the data-key (in the table) no longer exists (in the format), remove it."] == true then
+
+			for Key__DataInTable in pairs(table__Data) do
+
+				if self["Format"][Key__DataInTable] == nil then
+
+					table__Data[Key__DataInTable]	=	nil		-- TIP : In a table, setting keys with the value of "nil" removes it.
+
+					warn("Removed", Key__DataInTable, "due to its nonexistance in the Format.")
+
+				end
+
+			end
+
+		end
+
+		if self["If there is new data (that is not in the table), add that in."] == true then
+
+			for Key__DataFormat, Value__DataFormat in pairs(self["Format"]) do
+
+				if table__Data[Key__DataFormat] == nil then
+
+					table__Data[Key__DataFormat]	=	Value__DataFormat
+
+				end
+
+			end
+
+		end
+
+		return table__Data
+	end,
+
+
+	recurse__Data__Load	=	function(self, passed__table, passed__Parent)
+
+		for Key__Data, Value__Data in pairs(passed__table) do
+
+			--print(typeof(Value__Data))
+
+			if typeof(Value__Data) == "table" then
+
+				--print("-- entered infinity loop --")
+
+				local Folder__table		=	Instance.new("Folder")
+				Folder__table.Name		=	Key__Data
+				Folder__table.Parent	=	passed__Parent
+
+				self:recurse__Data__Load(Value__Data, Folder__table)
+
+			elseif typeof(Value__Data) == "boolean" or typeof(Value__Data) ==  "number" or typeof(Value__Data) ==  "string" then
+
+				--print("-- entered singular loop --")
+
+				local StringValue__Singular		=	Instance.new("StringValue")
+				StringValue__Singular.Name		=	Key__Data
+				StringValue__Singular.Value		=	tostring(Value__Data)	--	booleans & numbers should convert [string expected]
+				StringValue__Singular.Parent	=	passed__Parent
+
+			end
+
+		end
+
+	end,
+	
+	
+	recurse__Data__Save	=	function(self, passed__table, passed__Parent)
+		
+		for _, Object in pairs(passed__Parent:GetChildren()) do
+			
+			if Object:IsA("StringValue") then
+				
+				passed__table[Object.Name]	=	Object.Value
+				
+			elseif Object:IsA("Folder") then
+				
+				passed__table[Object.Name]	=	{}
+				
+				self:recurse__Data__Save(passed__table[Object.Name],Object)
+				
+			end
+			
+		end
+		
+	end,
+	
+	
+	create__Folder	=	function(self, Key)
+		
+		local table__Data	=	self:validate__Data(self:load__Data(Key))
+
+		local Folder__Parent	=	Instance.new("Folder")
+		Folder__Parent.Name		=	Key
+
+		self:recurse__Data__Load(table__Data, Folder__Parent)
+		
+		Folder__Parent.Parent	=	Service__ReplicatedStorage
+
+	end,
+	
+	
+	save__Data		=	function(self, Key)
+		
+		local Folder__Key	=	Service__ReplicatedStorage:WaitForChild(Key)
+		
+		local table__Data	=	{}
+		
+		self:recurse__Data__Save(table__Data, Folder__Key)
+		
+		Datastore:UpdateAsync(Key, function() return table__Data end)
+		
+	end,
+	
+	remove__Folder	=	function(self, Key)
+		
+		Service__ReplicatedStorage:WaitForChild(Key, self["Method WaitForChild TimeOut in seconds."]):Destroy()
+		
+	end,
+	
+	
+	Save	=	function(self)
+		
+		Service__Players.PlayerAdded:Connect(function(Player)
+			
+			self:create__Folder(Player.UserId)
+			
+		end)
+		
+		
+		Service__Players.PlayerRemoving:Connect(function(Player)
+			
+			self:save__Data(Player.UserId)
+			
+			self:remove__Folder(Player.UserId)
+			
+		end)
+		
+	end,
+	
+}
