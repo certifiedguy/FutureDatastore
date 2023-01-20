@@ -1,9 +1,20 @@
 # FutureDatastore
+
+<details><summary>Terms of service (THIS IS NOT OPEN SOURCE)</summary>
+
 | **Terms of service**  |
 | ------------- |
 | You agree I have no liability over any damage incured. Use at your own risk.  |
 | You `may modify` and `use` your versions the asset(s) provided.  |
 | You `may not distribute` provided and/or modified -version(s) of the asset(s) provided.  |
+
+</details>
+
+<details><summary>Example video</summary>
+
+https://user-images.githubusercontent.com/76778445/213763991-df138d08-bf73-47d7-a260-a116bc45d351.mp4
+
+</details>
 
 # Description
 
