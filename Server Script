@@ -1,0 +1,3 @@
+local ModuleScript	=	require(script.Parent)	--	Location of the Module
+
+ModuleScript:Start()
