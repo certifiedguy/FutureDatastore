@@ -7,7 +7,7 @@ local Service__Players				=	game:GetService("Players")
 
 --	Derived
 
-local Datastore						=	Service__DataStoreService:GetDataStore("1")
+local Datastore						=	Service__DataStoreService:GetDataStore("1")	--Modify this based on which Datastore you wish to use.
 
 
 --	return
@@ -20,20 +20,24 @@ return {
 	--	[Format - customize here]
 
 	Format	=	{
-
-		["Folder with one value"]	=	true,
-
-		["Folder with multiple values"]	=	{
-
-			["You can use space in keys!"]	=	"Yes!",
-
-			["Test"]	=	123,
-
-			["You can even create more levels"]	=	{true, "false", "wait, since when could i save arrays?"},
-
+		
+		Money	=	100,
+		
+		Rank	=	"Guard",
+		
+		Banned	=	false,	
+		
+		[" Example Key (with spaces) "]	=	false,
+		
+		Powers	=	{
+			
+			WalkSpeed	=	100,
+			
+			JumpPower	=	20000
+						
 		}
-
-	},
+		
+	},		--	the format ends here, do not write past here
 
 	--	[Settings - optional]
 
@@ -63,7 +67,7 @@ return {
 
 					table__Data[Key__DataInTable]	=	nil		-- TIP : In a table, setting keys with the value of "nil" removes it.
 
-					warn("Removed", Key__DataInTable, "due to its nonexistance in the Format.")
+					warn('Removed "'..Key__DataInTable..'" due to its nonexistance in the Format.')
 
 				end
 
@@ -78,7 +82,9 @@ return {
 				if table__Data[Key__DataFormat] == nil then
 
 					table__Data[Key__DataFormat]	=	Value__DataFormat
-
+					
+					warn('Detected & forged a new key named "'..Key__DataFormat..'".')
+					
 				end
 
 			end
@@ -93,11 +99,7 @@ return {
 
 		for Key__Data, Value__Data in pairs(passed__table) do
 
-			--print(typeof(Value__Data))
-
 			if typeof(Value__Data) == "table" then
-
-				--print("-- entered infinity loop --")
 
 				local Folder__table		=	Instance.new("Folder")
 				Folder__table.Name		=	Key__Data
@@ -106,8 +108,6 @@ return {
 				self:recurse__Data__Load(Value__Data, Folder__table)
 
 			elseif typeof(Value__Data) == "boolean" or typeof(Value__Data) ==  "number" or typeof(Value__Data) ==  "string" then
-
-				--print("-- entered singular loop --")
 
 				local StringValue__Singular		=	Instance.new("StringValue")
 				StringValue__Singular.Name		=	Key__Data
@@ -175,7 +175,7 @@ return {
 	end,
 	
 	
-	Save	=	function(self)
+	Start	=	function(self)
 		
 		Service__Players.PlayerAdded:Connect(function(Player)
 			
